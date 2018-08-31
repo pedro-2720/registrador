@@ -1,0 +1,2 @@
+# registrador
+registrador de datos
