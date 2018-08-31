@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CIAA CAPSE project template for EDU-CIAA-NXP
 
 
@@ -147,3 +148,7 @@ Included examples are:
      - freertos_blinky
      - blinky_osek
      - multicore 	
+=======
+# registrador
+registrador de datos
+>>>>>>> c7d9c5c228c258644348bacd745562a49a688b9a
