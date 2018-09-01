@@ -9,7 +9,7 @@
 #include "app.h"         // <= Su propia cabecera
 #include "sapi.h"        // <= Biblioteca sAPI
 
-// FUNCION PRINCIPAL, PUNTO DE ENTRADA AL PROGRAMA LUEGO DE ENCENDIDO O RESET.
+
 
 void showDateAndTime( rtc_t * rtc ){
  
@@ -43,7 +43,12 @@ void escribeHora(rtc_t *rtc)
    
    
 }
+//prototipo de la funcion format convierte los datos numericos en strimgs.
 
+static void format( float valor, char *dst, uint8_t pos );
+
+
+// FUNCION PRINCIPAL, PUNTO DE ENTRADA AL PROGRAMA LUEGO DE ENCENDIDO O RESET.
 int main( void )
 {
    // ---------- CONFIGURACIONES ------------------------------
@@ -104,6 +109,13 @@ int main( void )
 
    /* Establecer fecha y hora */
    val = rtcWrite( &rtc );
+  
+  //Variables para temp y humedad 
+   char buffout[64];
+	float hum = 0, temp = 0;
+   
+   dht11Init(GPIO1); // Inicializar DHT 11 en GPIO 1 por alli vamos a leer los datos.
+   uint8_t cont = 0;
 
  
 
@@ -125,6 +137,36 @@ int main( void )
          lcdGoToXY(1,2);
          escribeHora(&rtc);
       }
+      
+      //**************************************************************
+      // Leemos datos de temperatura y humedad
+      if( dht11Read( &hum, &temp ) ) {
+         
+			gpioWrite( LEDG, ON );
+			gpioWrite( LEDR, OFF );
+         
+			printf( "Temperatura: %d gradosC  " , temp);
+			format( temp, buffout, 0 );
+			
+
+			printf( "Humedad: %2.2f %  ", hum);
+			format( hum, buffout, 0 );
+         
+			
+         cont = 0;
+         printf("%d",cont);
+
+		} else {
+			gpioWrite( LEDG, OFF );
+			gpioWrite( LEDR, ON );
+         
+			printf ("Error al leer DHT11." );         
+      
+         cont++;
+		}   
+		delay(1500);
+      
+      //______________________________________
          
          
        
@@ -134,4 +176,22 @@ int main( void )
    // directamenteno sobre un microcontroladore y no es llamado por ningun
    // Sistema Operativo, como en el caso de un programa para PC.
    return 0;
+}
+
+/*==================[definiciones de funciones internas]=====================*/
+/* Fumcion que convierte float a string*/
+
+static void format( float valor, char *dst, uint8_t pos ){
+	uint16_t val;
+	val = 10 * valor;
+	val = val % 1000;
+	dst[pos] = (val / 100) + '0';
+	pos++;
+	dst[pos] = (val % 100) / 10 + '0';
+	pos++;
+	dst[pos] = '.';
+	pos++;
+	dst[pos] = (val % 10)  + '0';
+	pos++;
+	dst[pos] = '\0';
 }
