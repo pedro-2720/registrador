@@ -47,6 +47,9 @@ void escribeHora(rtc_t *rtc)
 
 static void format( float valor, char *dst, uint8_t pos );
 
+//funcion que lee el sensor
+
+
 
 // FUNCION PRINCIPAL, PUNTO DE ENTRADA AL PROGRAMA LUEGO DE ENCENDIDO O RESET.
 int main( void )
@@ -115,7 +118,7 @@ int main( void )
 	float hum = 0, temp = 0;
    
    dht11Init(GPIO1); // Inicializar DHT 11 en GPIO 1 por alli vamos a leer los datos.
-   uint8_t cont = 0;
+   uint8_t tiempo = 0;
 
  
 
@@ -134,37 +137,49 @@ int main( void )
          showDateAndTime( &rtc );
          //printf("muestra hora");
          //Enviamos fecha y hora al lcd
-         lcdGoToXY(1,2);
+         lcdGoToXY(1,1);
          escribeHora(&rtc);
+         tiempo++;
       }
       
       //**************************************************************
-      // Leemos datos de temperatura y humedad
-      if( dht11Read( &hum, &temp ) ) {
+      // Leemos datos de temperatura y humedad cada 2 seg
+      if(tiempo == 2)
+      {
+         if( dht11Read( &hum, &temp ) ) {
          
-			gpioWrite( LEDG, ON );
-			gpioWrite( LEDR, OFF );
-         
-			printf( "Temperatura: %d gradosC  " , temp);
-			format( temp, buffout, 0 );
-			
-
-			printf( "Humedad: %2.2f %  ", hum);
-			format( hum, buffout, 0 );
-         
-			
-         cont = 0;
-         printf("%d",cont);
-
-		} else {
-			gpioWrite( LEDG, OFF );
-			gpioWrite( LEDR, ON );
-         
-			printf ("Error al leer DHT11." );         
+            gpioWrite( LEDG, ON );
+            gpioWrite( LEDR, OFF );
+            
+            lcdGoToXY(1,3);
+            printf("\r\n");
+            format( temp, buffout, 0 );
+            printf( "Temperatura: %s gradosC  " , buffout);
+            lcdSendStringRaw( "Temp: " );
+            lcdSendStringRaw( buffout );
       
-         cont++;
-		}   
-		delay(1500);
+            format( hum, buffout, 0 );
+            printf( "Humedad: %s   ", buffout);
+            lcdSendStringRaw( " Hum: " );
+            lcdSendStringRaw( buffout );
+            
+         
+			
+         //cont = 0;
+         //printf("%d",cont);
+            } 
+         else {
+            gpioWrite( LEDG, OFF );
+            gpioWrite( LEDR, ON );
+         
+            printf ("Error al leer DHT11.\n\r" );         
+      
+        // cont++;
+            }
+            
+            tiempo = 0;
+         }   
+		//delay(1500);
       
       //______________________________________
          
